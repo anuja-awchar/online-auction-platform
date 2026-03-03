@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - Online Auction Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in': 'slideIn 0.5s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out'
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-slate-50 min-h-screen">
+    <header class="bg-gradient-to-r from-gray-700 to-slate-700 text-white py-4 shadow-lg animate-slide-in">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold hover:scale-105 transition-transform duration-300"><i class="fas fa-cog animate-spin"></i> Admin Dashboard</h1>
+            <nav class="flex space-x-4">
+                <a href="/" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-home"></i> Home</a>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+            <div class="bg-gradient-to-r from-gray-700 to-slate-700 p-6">
+                <h2 class="text-2xl font-bold text-white text-center"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard Overview</h2>
+                <p class="text-gray-200 text-center mt-2">System statistics and recent activity</p>
+            </div>
+
+            <div class="p-8">
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.1s">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2"><i class="fas fa-users mr-2"></i>Total Users</h3>
+                                <p class="text-3xl font-bold" th:text="${#lists.size(users)}">0</p>
+                            </div>
+                            <i class="fas fa-users text-4xl opacity-50"></i>
+                        </div>
+                        <a href="/admin/users" class="inline-block mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-arrow-right mr-1"></i>Manage Users
+                        </a>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.2s">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2"><i class="fas fa-gavel mr-2"></i>Total Items</h3>
+                                <p class="text-3xl font-bold" th:text="${#lists.size(items)}">0</p>
+                            </div>
+                            <i class="fas fa-gavel text-4xl opacity-50"></i>
+                        </div>
+                        <a href="/admin/items" class="inline-block mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-arrow-right mr-1"></i>Manage Items
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recent Users Table -->
+                <div class="animate-fade-in" style="animation-delay: 0.3s">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-users text-blue-600 mr-2"></i>Recent Users
+                    </h3>
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr th:each="user : ${users}" th:if="${userStat.index < 5}" class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${user.id}">1</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${user.username}">username</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${user.email}">email@example.com</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800" th:text="${user.roles}">USER</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Items Table -->
+                <div class="animate-fade-in mt-8" style="animation-delay: 0.4s">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-gavel text-green-600 mr-2"></i>Recent Auction Items
+                    </h3>
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seller</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr th:each="item : ${items}" th:if="${itemStat.index < 5}" class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${item.id}">1</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${item.title}">Item Title</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.seller.username}">Seller</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold" th:text="${item.startingPrice}">$0.00</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">End Time</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center py-4 mt-auto">
+        <div class="container mx-auto">
+            <p>&copy; 2025 Online Auction Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to table rows
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.classList.add('transform', 'scale-105');
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.classList.remove('transform', 'scale-105');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

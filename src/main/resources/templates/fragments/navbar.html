@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <header th:fragment="navbar" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 shadow-lg animate-slide-in fixed w-full top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="text-2xl font-bold hover:scale-105 transition-transform duration-300"><i class="fas fa-gavel animate-bounce"></i> Online Auction Platform</h1>
+            <nav class="flex space-x-4">
+                <a href="/" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-home"></i> Home</a>
+                <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}" href="/admin" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-cog"></i> Admin</a>
+                <a th:if="${#authorization.expression('isAuthenticated()')}" href="/create-item" class="bg-green-500 hover:bg-green-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-plus-circle"></i> Create Item</a>
+                <!-- User Dropdown for logged-in users -->
+                <div th:if="${#authorization.expression('isAuthenticated()')}" class="relative">
+                    <button id="userMenuButton" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110 flex items-center">
+                        <i class="fas fa-user"></i> <span th:text="${#authentication.name}"></span> <i class="fas fa-chevron-down ml-1"></i>
+                    </button>
+                    <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 hidden">
+                        <a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="/my-bids" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"><i class="fas fa-gavel"></i> My Bids</a>
+                        <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                <a th:if="${#authorization.expression('!isAuthenticated()')}" href="/login" class="bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a th:if="${#authorization.expression('!isAuthenticated()')}" href="/register" class="bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-user-plus"></i> Register</a>
+            </nav>
+        </div>
+    </header>
+</body>
+</html>

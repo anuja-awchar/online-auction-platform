@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Users - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in': 'slideIn 0.5s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out'
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-slate-50 min-h-screen">
+    <header class="bg-gradient-to-r from-gray-700 to-slate-700 text-white py-4 shadow-lg animate-slide-in">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold hover:scale-105 transition-transform duration-300"><i class="fas fa-cog animate-spin"></i> Admin Dashboard</h1>
+            <nav class="flex space-x-4">
+                <a href="/admin" class="bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-home"></i> Home</a>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
+                <h2 class="text-2xl font-bold text-white text-center"><i class="fas fa-users mr-2"></i> Manage Users</h2>
+                <p class="text-blue-100 text-center mt-2">User management and administration</p>
+            </div>
+
+            <div class="p-8">
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm animate-fade-in">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr th:each="user : ${users}" class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${user.id}">1</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${user.username}">username</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${user.email}">email@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <form th:action="@{'/admin/users/' + ${user.id} + '/roles'}" method="post" class="inline-block">
+                                            <div class="flex items-center space-x-2">
+                                                <select name="roles" class="text-xs border border-gray-300 rounded px-2 py-1" onchange="this.form.submit()">
+                                                    <option value="USER" th:selected="${#sets.contains(user.roles, 'USER')}" th:text="'USER' + (#sets.contains(user.roles, 'ADMIN') ? ' + ADMIN' : '')">USER</option>
+                                                    <option value="USER,ADMIN" th:selected="${#sets.contains(user.roles, 'ADMIN')}" th:text="'USER + ADMIN'">USER + ADMIN</option>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            <form th:action="@{'/admin/users/' + ${user.id} + '/roles'}" method="post" class="inline-block">
+                                                <input type="hidden" name="roles" th:value="${#sets.contains(user.roles, 'ADMIN') ? 'USER' : 'USER,ADMIN'}">
+                                                <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-300 transform hover:scale-105">
+                                                    <i class="fas fa-edit mr-1"></i>Toggle Role
+                                                </button>
+                                            </form>
+                                            <form th:action="@{'/admin/users/' + ${user.id}}" method="post" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-300 transform hover:scale-105">
+                                                    <i class="fas fa-trash mr-1"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center py-4 mt-auto">
+        <div class="container mx-auto">
+            <p>&copy; 2025 Online Auction Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to table rows
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.classList.add('transform', 'scale-105');
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.classList.remove('transform', 'scale-105');
+                });
+            });
+
+            // Add click handlers for action buttons
+            const editButtons = document.querySelectorAll('button.bg-yellow-500');
+            const deleteButtons = document.querySelectorAll('button.bg-red-500');
+
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    alert('Edit functionality would be implemented here');
+                });
+            });
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to delete this user?')) {
+                        alert('Delete functionality would be implemented here');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Auction Items - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in': 'slideIn 0.5s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out'
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-slate-50 min-h-screen">
+    <header class="bg-gradient-to-r from-gray-700 to-slate-700 text-white py-4 shadow-lg animate-slide-in">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold hover:scale-105 transition-transform duration-300"><i class="fas fa-cog animate-spin"></i> Admin Dashboard</h1>
+            <nav class="flex space-x-4">
+                <a href="/admin" class="bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-home"></i> Home</a>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 p-6">
+                <h2 class="text-2xl font-bold text-white text-center"><i class="fas fa-gavel mr-2"></i> Manage Auction Items</h2>
+                <p class="text-green-100 text-center mt-2">Auction item management and administration</p>
+            </div>
+
+            <div class="p-8">
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm animate-fade-in">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seller</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Featured</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr th:each="item : ${items}" class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${item.id}">1</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${item.title}">Item Title</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.seller.username}">Seller</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold" th:text="${item.startingPrice}">$0.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">End Time</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <form th:action="@{'/admin/items/' + ${item.id} + '/featured'}" method="post" class="inline-block">
+                                            <input type="hidden" name="featured" th:value="${!item.featured}">
+                                            <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full transition-all duration-300 transform hover:scale-105"
+                                                    th:classappend="${item.featured ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}">
+                                                <i th:classappend="${item.featured ? 'fas fa-star' : 'far fa-star'}" class="mr-1"></i>
+                                                <span th:text="${item.featured ? 'Featured' : 'Feature'}">Feature</span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            <a th:href="@{'/item/' + ${item.id}}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-300 transform hover:scale-105">
+                                                <i class="fas fa-eye mr-1"></i>View
+                                            </a>
+                                            <a th:href="@{'/admin/items/' + ${item.id} + '/edit'}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-300 transform hover:scale-105 inline-block">
+                                                <i class="fas fa-edit mr-1"></i>Edit
+                                            </a>
+                                            <form th:action="@{'/admin/items/' + ${item.id}}" method="post" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this item?')">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-300 transform hover:scale-105">
+                                                    <i class="fas fa-trash mr-1"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center py-4 mt-auto">
+        <div class="container mx-auto">
+            <p>&copy; 2025 Online Auction Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to table rows
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.classList.add('transform', 'scale-105');
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.classList.remove('transform', 'scale-105');
+                });
+            });
+
+            // Add click handlers for action buttons
+            const editButtons = document.querySelectorAll('button.bg-yellow-500');
+            const deleteButtons = document.querySelectorAll('button.bg-red-500');
+
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    alert('Edit functionality would be implemented here');
+                });
+            });
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to delete this item?')) {
+                        alert('Delete functionality would be implemented here');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${item.title} + ' - Online Auction Platform'">Item Detail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in': 'slideIn 0.5s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out'
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-blue-50 min-h-screen">
+    <header class="bg-gradient-to-r from-indigo-500 to-blue-600 text-white py-4 shadow-lg animate-slide-in">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold hover:scale-105 transition-transform duration-300"><i class="fas fa-gavel animate-bounce"></i> Online Auction Platform</h1>
+            <nav class="flex space-x-4">
+                <a href="/" class="text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-home"></i> Home</a>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-110"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
+                <!-- Item Image and Details -->
+                <div class="lg:col-span-2 p-8">
+                    <div class="mb-6">
+                        <img th:src="${item.imageFilename != null and !item.imageFilename.isEmpty()} ? @{'/uploads/images/' + ${item.imageFilename}} : @{'/images/placeholder.png'}" th:alt="${item.title}"
+                             class="w-full h-96 object-cover rounded-lg shadow-lg animate-fade-in">
+                    </div>
+
+                    <div class="space-y-4 animate-fade-in" style="animation-delay: 0.2s">
+                        <div class="flex items-center justify-between">
+                            <h1 th:text="${item.title}" class="text-3xl font-bold text-gray-800">Item Title</h1>
+                            <div th:if="${item.featured}" class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                <i class="fas fa-star mr-1"></i>Featured
+                            </div>
+                        </div>
+
+                        <p th:text="${item.description}" class="text-gray-600 text-lg leading-relaxed">Item Description</p>
+
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-folder text-purple-600 mr-2"></i>
+                                <span class="font-semibold text-purple-800">Category:</span>
+                                <span th:text="${item.category}" class="ml-2 text-purple-700">Category</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+                                    <span class="font-semibold text-green-800">Starting Price</span>
+                                </div>
+                                <span th:text="${item.startingPrice}" class="text-2xl font-bold text-green-700">$0.00</span>
+                            </div>
+
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-clock text-blue-600 mr-2"></i>
+                                    <span class="font-semibold text-blue-800">Auction Ends</span>
+                                </div>
+                                <span th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}" class="text-lg font-bold text-blue-700">End Time</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center">
+                                <i class="fas fa-user text-gray-600 mr-2"></i>
+                                <span class="font-semibold text-gray-800">Seller:</span>
+                                <span th:text="${item.seller.username}" class="ml-2 text-gray-700">Seller</span>
+                            </div>
+                        </div>
+
+                        <!-- Edit/Delete Actions for Sellers/Admins -->
+                        <div th:if="${isSeller or isAdmin}" class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 animate-fade-in" style="animation-delay: 0.25s">
+                            <h3 class="text-lg font-bold text-yellow-800 mb-3 flex items-center">
+                                <i class="fas fa-cog text-yellow-600 mr-2"></i>Item Management
+                            </h3>
+                            <div class="flex space-x-3">
+                                <a th:href="@{'/item/' + ${item.id} + '/edit'}" th:if="${isSeller}"
+                                   class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                                    <i class="fas fa-edit mr-2"></i>Edit Item
+                                </a>
+                                <a th:href="@{'/admin/items/' + ${item.id} + '/edit'}" th:if="${isAdmin}"
+                                   class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                                    <i class="fas fa-edit mr-2"></i>Edit Item (Admin)
+                                </a>
+                                <form th:action="@{'/item/' + ${item.id} + '/delete'}" method="post" th:if="${isSeller}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone.')">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                                        <i class="fas fa-trash mr-2"></i>Delete Item
+                                    </button>
+                                </form>
+                                <form th:action="@{'/admin/items/' + ${item.id}}" method="post" th:if="${isAdmin}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone.')">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                                        <i class="fas fa-trash mr-2"></i>Delete Item (Admin)
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bidding Section -->
+                <div class="bg-gray-50 p-8 border-l border-gray-200">
+                    <div class="space-y-6">
+                        <!-- Bid History -->
+                        <div class="animate-fade-in" style="animation-delay: 0.3s">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-history text-indigo-600 mr-2"></i>Bid History
+                            </h3>
+                            <div class="space-y-3 max-h-64 overflow-y-auto">
+                                <div th:each="bid : ${bids}" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <span th:text="${bid.bidder.username}" class="font-semibold text-gray-800">Bidder</span>
+                                        <span th:text="${bid.amount}" class="text-green-600 font-bold">$0.00</span>
+                                    </div>
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        <span th:text="${#temporals.format(bid.bidTime, 'MMM dd, HH:mm')}">Time</span>
+                                    </div>
+                                </div>
+                                <div th:if="${#lists.isEmpty(bids)}" class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-inbox text-3xl mb-2"></i>
+                                    <p>No bids yet. Be the first to bid!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Bid Display -->
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4 animate-fade-in" style="animation-delay: 0.3s">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-green-800">
+                                    <i class="fas fa-dollar-sign mr-1"></i>Current Price
+                                </span>
+                                <span class="text-2xl font-bold text-green-700" th:text="${currentPrice != null} ? ${#numbers.formatDecimal(currentPrice, 1, 2)} : ${#numbers.formatDecimal(item.startingPrice, 1, 2)}">$0.00</span>
+                            </div>
+                            <p class="text-sm text-green-600 mt-1" th:if="${#lists.isEmpty(bids)}">No bids yet. Starting bid: <span th:text="${#numbers.formatDecimal(item.startingPrice, 1, 2)}">$0.00</span></p>
+                            <p class="text-sm text-green-600 mt-1" th:if="${!#lists.isEmpty(bids)}">Highest bid so far. Your bid must be higher.</p>
+                        </div>
+
+                        <!-- Place Bid Form -->
+                        <div class="animate-fade-in" style="animation-delay: 0.4s">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-hand-paper text-indigo-600 mr-2"></i>Place Your Bid
+                            </h3>
+                            <form th:action="@{'/item/' + ${item.id} + '/bid'}" method="post" class="space-y-4" id="bidForm">
+                                <div>
+                                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-dollar-sign text-indigo-600 mr-1"></i>Bid Amount (must be higher than <span th:text="${currentPrice != null} ? ${#numbers.formatDecimal(currentPrice, 1, 2)} : ${#numbers.formatDecimal(item.startingPrice, 1, 2)}">$0.00</span>)
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                                        <input type="number" id="amount" name="amount" step="0.01" th:attr="min=${currentPrice != null} ? ${currentPrice.add(java.math.BigDecimal.valueOf(0.01))} : ${item.startingPrice.add(java.math.BigDecimal.valueOf(0.01))}" required
+                                               class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:border-indigo-400"
+                                               placeholder="Enter your bid">
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Minimum bid increment: $0.01</p>
+                                </div>
+                                <button type="submit"
+                                        class="w-full bg-gradient-to-r from-indigo-500 to-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-indigo-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i class="fas fa-gavel mr-2"></i>Place Bid
+                                </button>
+                            </form>
+                            <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mt-4 animate-fade-in">
+                                <i class="fas fa-exclamation-triangle mr-2"></i> <span th:text="${error}">Error message</span>
+                            </div>
+                        </div>
+
+                        <!-- Featured Toggle (Admin) -->
+                        <div th:if="${#authorization.expression('isAuthenticated()')}" class="animate-fade-in" style="animation-delay: 0.5s">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fas fa-star text-indigo-600 mr-2"></i>Featured Status
+                            </h3>
+                            <form th:action="@{'/item/' + ${item.id} + '/featured'}" method="post" class="space-y-2">
+                                <input type="hidden" name="featured" th:value="${!item.featured}">
+                                <button type="submit"
+                                        class="w-full py-2 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                                        th:classappend="${item.featured} ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'">
+                                    <i class="fas fa-star mr-2"></i>
+                                    <span th:text="${item.featured} ? 'Remove from Featured' : 'Add to Featured'"></span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Chat Section -->
+                        <div th:if="${currentUser != null}" class="animate-fade-in" style="animation-delay: 0.6s">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-comments text-indigo-600 mr-2"></i>Chat with Seller
+                            </h3>
+                            <div id="chatContainer" class="bg-white rounded-lg shadow-sm border border-gray-200 h-96 flex flex-col">
+                                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                                    <div th:each="msg : ${chatMessages}" class="flex" th:class="${msg.sender.id == currentUser.id} ? 'justify-end' : 'justify-start'">
+                                        <div th:class="${msg.sender.id == currentUser.id} ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-800'" 
+                                             class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
+                                            <div class="flex items-center mb-1">
+                                                <span th:text="${msg.sender.username}" class="font-semibold text-sm"></span>
+                                                <span class="ml-auto text-xs opacity-75" th:text="${#temporals.format(msg.timestamp, 'HH:mm')}"></span>
+                                            </div>
+                                            <p th:text="${msg.message}" class="text-sm break-words"></p>
+                                        </div>
+                                    </div>
+                                    <div th:if="${#lists.isEmpty(chatMessages)}" class="text-center py-8 text-gray-500">
+                                        <i class="fas fa-comment-dots text-3xl mb-2"></i>
+                                        <p>No messages yet. Start the conversation!</p>
+                                    </div>
+                                </div>
+                                <div class="p-4 border-t border-gray-200">
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="messageInput" placeholder="Type your message..." 
+                                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                               maxlength="1000">
+                                        <button id="sendButton" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300">
+                                            <i class="fas fa-paper-plane"></i> Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center py-4 mt-auto">
+        <div class="container mx-auto">
+            <p>&copy; 2025 Online Auction Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add focus animations to form inputs
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('transform', 'scale-105');
+                });
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('transform', 'scale-105');
+                });
+            });
+
+            // Bid validation
+            const bidForm = document.getElementById('bidForm');
+            const amountInput = document.getElementById('amount');
+            const submitBtn = bidForm.querySelector('button[type="submit"]');
+            const minBid = parseFloat(amountInput.min) || 0.01;
+
+            amountInput.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                if (isNaN(value) || value < minBid) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Bid must be higher than current price';
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-gavel mr-2"></i>Place Bid';
+                }
+            });
+
+            // Auto-scroll to bid history if there are bids
+            const bidHistory = document.querySelector('[th\\:each="bid : ${bids}"]');
+            if (bidHistory) {
+                bidHistory.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Chat functionality
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) {
+                const auctionId = /*[[${item.id}]]*/ 0;
+                const currentUserId = /*[[${currentUser.id}]]*/ 0;
+                const messageInput = document.getElementById('messageInput');
+                const sendButton = document.getElementById('sendButton');
+                const chatMessages = document.getElementById('chatMessages');
+
+                let stompClient = null;
+
+                function connect() {
+                    const socket = new SockJS('/ws');
+                    stompClient = Stomp.over(socket);
+                    stompClient.connect({}, function(frame) {
+                        console.log('Connected: ' + frame);
+                        stompClient.subscribe('/topic/chat/' + auctionId, function(message) {
+                            showMessage(JSON.parse(message.body));
+                        });
+                    }, function(error) {
+                        console.log('Error: ' + error);
+                        setTimeout(connect, 5000);
+                    });
+                }
+
+                function disconnect() {
+                    if (stompClient !== null) {
+                        stompClient.disconnect();
+                    }
+                    console.log("Disconnected");
+                }
+
+                function sendMessage() {
+                    const message = messageInput.value.trim();
+                    if (message && stompClient) {
+                        const chatMessage = {
+                            message: message,
+                            auctionItem: { id: auctionId },
+                            sender: { id: currentUserId }
+                        };
+                        stompClient.send("/app/chat/" + auctionId, {}, JSON.stringify(chatMessage));
+                        messageInput.value = '';
+                    }
+                }
+
+                function showMessage(message) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'flex ' + (message.sender.id == currentUserId ? 'justify-end' : 'justify-start');
+
+                    const messageBubble = document.createElement('div');
+                    messageBubble.className = 'max-w-xs lg:max-w-md px-4 py-2 rounded-lg ' +
+                        (message.sender.id == currentUserId ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-800');
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'flex items-center mb-1';
+
+                    const usernameSpan = document.createElement('span');
+                    usernameSpan.className = 'font-semibold text-sm';
+                    usernameSpan.textContent = message.sender.username;
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'ml-auto text-xs opacity-75';
+                    timeSpan.textContent = new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                    headerDiv.appendChild(usernameSpan);
+                    headerDiv.appendChild(timeSpan);
+
+                    const messageP = document.createElement('p');
+                    messageP.className = 'text-sm break-words';
+                    messageP.textContent = message.message;
+
+                    messageBubble.appendChild(headerDiv);
+                    messageBubble.appendChild(messageP);
+                    messageDiv.appendChild(messageBubble);
+
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
+                sendButton.addEventListener('click', sendMessage);
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                connect();
+
+                // Scroll to bottom of chat
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Error - Online Auction Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-red-50 to-orange-50 min-h-screen">
+    <header class="bg-gradient-to-r from-red-500 to-orange-600 text-white py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold"><i class="fas fa-gavel"></i> Online Auction Platform</h1>
+            <nav class="flex space-x-4">
+                <a href="/" class="text-white hover:text-yellow-300 px-3 py-2 rounded">Home</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-16">
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="px-8 py-8 text-center">
+                <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2" th:text="${statusCode} + ': ' + ${errorMessage}">Error</h2>
+                <p class="text-gray-600 mb-4" th:text="${errorMessage}">An unexpected error occurred</p>
+                <p class="text-sm text-gray-500 mb-6" th:text="'Occurred at: ' + ${timestamp}">Timestamp</p>
+                <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-home mr-2"></i> Go Home
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center py-4 mt-auto">
+        <div class="container mx-auto">
+            <p>&copy; 2025 Online Auction Platform. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
